@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Reservation System</title>
+</head>
+<body>
+    <h1>Online Reservation System</h1>
+
+    <!-- Reserve Ticket Form -->
+    <h2>Reserve Ticket</h2>
+    <form id="reserveForm">
+        <input type="text" id="trainNumber" placeholder="Train Number" required><br>
+        <input type="text" id="trainName" placeholder="Train Name" required><br>
+        <input type="text" id="classType" placeholder="Class Type" required><br>
+        <input type="date" id="journeyDate" required><br>
+        <input type="text" id="from" placeholder="From" required><br>
+        <input type="text" id="to" placeholder="To" required><br>
+        <button type="button" onclick="reserveTicket()">Reserve</button>
+    </form>
+
+    <!-- Cancel Ticket Form -->
+    <h2>Cancel Ticket</h2>
+    <form id="cancelForm">
+        <input type="number" id="pnr" placeholder="PNR Number" required><br>
+        <button type="button" onclick="cancelTicket()">Cancel Ticket</button>
+    </form>
+
+    <!-- View All Tickets -->
+    <h2>All Tickets</h2>
+    <button onclick="viewTickets()">View Tickets</button>
+    <div id="tickets"></div>
+
+    <script>
+        const apiUrl = "http://localhost:8080/api";
+
+        // Function to reserve a ticket
+        function reserveTicket() {
+            const ticket = {
+                trainNumber: document.getElementById("trainNumber").value,
+                trainName: document.getElementById("trainName").value,
+                classType: document.getElementById("classType").value,
+                journeyDate: document.getElementById("journeyDate").value,
+                from: document.getElementById("from").value,
+                to: document.getElementById("to").value
+            };
+
+            fetch(apiUrl + "/reserve", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(ticket)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Ticket Reserved: PNR " + data.pnr);
+                document.getElementById("reserveForm").reset();
+            });
+        }
+
+        // Function to cancel a ticket
+        function cancelTicket() {
+            const pnr = document.getElementById("pnr").value;
+
+            fetch(apiUrl + "/cancel/" + pnr, { method: "DELETE" })
+                .then(response => {
+                    if (response.ok) {
+                        alert("Ticket Canceled");
+                    } else {
+                        alert("PNR not found");
+                    }
+                });
+        }
+
+        // Function to view all tickets
+        function viewTickets() {
+            fetch(apiUrl + "/tickets")
+                .then(response => response.json())
+                .then(data => {
+                    const ticketsDiv = document.getElementById("tickets");
+                    ticketsDiv.innerHTML = "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+                });
+        }
+    </script>
+</body>
+</html>
